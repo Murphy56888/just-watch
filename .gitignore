@@ -1,0 +1,3 @@
+*.json
+!tools/*.json
+__pycache__/
