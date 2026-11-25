@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-CATS = {'news', 'invest', 'talk', 'video'}
+CATS = {'news', 'invest', 'talk', 'video', 'learn'}
 REQ = ['id', 'c', 'd', 't', 's', 'src', 'u']
 
 
@@ -22,9 +22,11 @@ def check(doc):
         ids.add(it['id'])
         assert len(it['d']) in (2, 5), f'日期格式应为 MM-DD: {it["d"]}'
         assert it['u'].startswith('https://'), f'链接须为 https: {it["u"]}'
+        if it['c'] == 'learn' and it.get('v'):
+            assert '.mp4' in it['v'], f'视频帖需要 mp4 直链: {it["id"]}'
         if it['c'] == 'video':
             assert it.get('v', '').startswith('https://') and '.mp4' in it['v'], f'剧集缺少 mp4 直链: {it["id"]}'
-        if it['c'] in ('video', 'talk'):
+        if it['c'] in ('video', 'talk', 'learn'):
             assert it.get('img'), f'缺少封面: {it["id"]}'
 
 
