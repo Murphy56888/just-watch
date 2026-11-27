@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>只看 · 播放</title>
+<style>html,body{margin:0;height:100%;background:#000}iframe{border:0;width:100%;height:100%;display:block}</style>
+</head><body>
+<script>
+// 只看 app 内播放 YouTube 用的小页面：YouTube 内嵌播放器需要一个正常的网页来源，App 本地页面没有，所以中转一下。
+var v=(location.search.match(/[?&]v=([\w-]{6,20})/)||[])[1]||'';
+var f=document.createElement('iframe');
+f.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';
+f.allowFullscreen=true;
+f.referrerPolicy='strict-origin-when-cross-origin';
+f.src='https://www.youtube.com/embed/'+v+'?autoplay=1&playsinline=1&rel=0&modestbranding=1';
+document.body.appendChild(f);
+</script>
+</body></html>
