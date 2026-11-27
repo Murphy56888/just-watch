@@ -24,7 +24,9 @@ def check(doc):
         assert it['u'].startswith('https://'), f'链接须为 https: {it["u"]}'
         if it['c'] == 'learn' and it.get('v'):
             assert '.mp4' in it['v'], f'视频帖需要 mp4 直链: {it["id"]}'
-        if it['c'] in ('video', 'comedy'):
+        if it['c'] == 'video' and it.get('yt'):
+            assert 'youtube.com/watch?v=' in it['u'], f'YouTube 剧集需要 watch 链接: {it["id"]}'
+        elif it['c'] in ('video', 'comedy'):
             assert it.get('v', '').startswith('https://') and '.mp4' in it['v'], f'剧集缺少 mp4 直链: {it["id"]}'
         if it['c'] in ('video', 'talk', 'learn', 'comedy'):
             assert it.get('img'), f'缺少封面: {it["id"]}'
