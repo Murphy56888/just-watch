@@ -270,7 +270,7 @@ def build(S):
         if it['c'] == 'comedy': com.setdefault(author(it), []).append(it)
     cout = []
     for a, L in com.items(): cout += sorted(L, key=lambda x: -x['_dt'])[:6]
-    write('comedy', gen, ['71脱口秀', '付航脱口秀', '三个火呛手', '林简七', '脱口秀小荟'], cout)
+    write('comedy', gen, ['71脱口秀', '付航脱口秀', '三个火呛手', '林简七', '脱口秀小荟', '清一色脱口秀'], cout)
     # ---- learn：最近 7 天，热度前 10 ----
     L = [it for it in items if it['c'] == 'learn' and (ts.timestamp() - it['_dt']) < 7.5 * 86400]
     L.sort(key=lambda x: -(x.get('_heat') or num(x.get('l')) + num(x.get('k'))))
