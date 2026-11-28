@@ -78,7 +78,7 @@ def plan():
     budget -= len(jobs['profiles'])
     # 2) AI学习 关键词：每次 1 个，下午 3 点前做完
     done_today = sum(1 for k in LEARN_KW if S['learn_kw'].get(k) == t)
-    if hour < 15 and budget > 2 and done_today < 4:
+    if hour < 22 and budget > 2 and done_today < 4:
         left = sorted([k for k in LEARN_KW if S['learn_kw'].get(k) != t], key=lambda k: S['learn_kw'].get(k, ''))
         if left:
             jobs['learn_keyword'] = left[0]; budget -= 1
