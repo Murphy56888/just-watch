@@ -56,7 +56,7 @@ def plan():
     jobs = {'max_requests': MAX_REQ, 'profiles': [], 'learn_keyword': None, 'details': [], 'pending_to_review': []}
     budget = MAX_REQ
     # 1) 博主主页：今天还没查过的，最久没查的优先
-    due = [b for b in S['bloggers'] if b.get('last_check') != t]
+    due = [b for b in S['bloggers'] if b.get('last_check') != t and not b.get('skip')]
     due.sort(key=lambda b: b.get('last_check') or '')
     for b in due[:PROFILES_PER_RUN]:
         jobs['profiles'].append({k: b[k] for k in ('uid', 'name', 'kind')})
