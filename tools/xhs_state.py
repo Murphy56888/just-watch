@@ -51,8 +51,14 @@ def xhs_url(nid, tok, src):
 
 
 # ---------------- plan ----------------
+def dkey(it):
+    a = it['src'].split(' · ')[0]
+    return f"se:{a}|{it['se']}" if it.get('se') and it.get('ep') is not None else (it.get('_nid') and 'xhs:' + it['_nid'] or it['id'])
+
+
 def plan():
     S = load(); t = today(); ts = time.time(); hour = now().hour
+    DIS = set(S.get('disliked', []))
     jobs = {'max_requests': MAX_REQ, 'profiles': [], 'learn_keyword': None, 'details': [], 'pending_to_review': []}
     budget = MAX_REQ
     # 1) 博主主页：今天还没查过的，最久没查的优先
@@ -82,7 +88,7 @@ def plan():
     for p in pend:
         if len(det) >= budget: break
         det.append({'nid': p['nid'], 'tok': p['tok'], 'src': p.get('xsrc', 'pc_user'), 'why': 'new', 'title': p.get('title', '')})
-    exp = sorted([it for it in S['items'].values() if it.get('_tok') and it.get('v') and v_exp(it['v']) < ts + 36 * 3600],
+    exp = sorted([it for it in S['items'].values() if it.get('_tok') and it.get('v') and v_exp(it['v']) < ts + 36 * 3600 and dkey(it) not in DIS],
                  key=lambda it: v_exp(it['v']))
     for it in exp:
         if len(det) >= budget: break
@@ -171,6 +177,8 @@ def apply(path):
               '_nid': nid, '_tok': p['tok'], '_xsrc': p.get('xsrc', 'pc_user'), '_uid': p.get('uid', '')}
         for k in ('v', 'se', 'ep', 'el', 'body', 'imgs'):
             if d.get(k) not in (None, '', []): it[k] = d[k]
+        if dkey(it) in set(S.get('disliked', [])):
+            S['rejected'].append(nid); continue
         if d['c'] == 'learn':
             it['_heat'] = num(d.get('liked')) + num(d.get('collected'))
         S['items'][nid] = it
@@ -178,6 +186,15 @@ def apply(path):
             if b['uid'] == p.get('uid'): b['last_new'] = t
     S['rejected'] = S['rejected'][-3000:]
     save(S); build(S)
+
+
+def dislike(path):
+    # 文本里每行形如 "- 艺一《困兽之战》  [se:艺一|困兽之战]"，取方括号里的 key
+    S = load(); keys = re.findall(r'\[((?:se:|xhs:)[^\]]+)\]', open(path, encoding='utf-8').read())
+    S.setdefault('disliked', [])
+    for k in keys:
+        if k not in S['disliked']: S['disliked'].append(k)
+    print('disliked', S['disliked']); save(S); build(S)
 
 
 def ext(path):
@@ -203,7 +220,8 @@ def clean(it):
 
 def build(S):
     gen = now().strftime('%Y-%m-%dT%H:%M+08:00'); ts = now()
-    items = list(S['items'].values())
+    DIS = set(S.get('disliked', []))
+    items = [it for it in S['items'].values() if dkey(it) not in DIS]
     for it in items:
         nt = note_time(it.get('_nid', '')) if it.get('_nid') else None
         if nt is None:
@@ -295,4 +313,4 @@ def show():
 
 if __name__ == '__main__':
     cmd = sys.argv[1]
-    {'plan': plan, 'show': show, 'series': series}.get(cmd, lambda: None)() if cmd in ('plan', 'show', 'series') else {'apply': apply, 'ext': ext}[cmd](sys.argv[2])
+    {'plan': plan, 'show': show, 'series': series}.get(cmd, lambda: None)() if cmd in ('plan', 'show', 'series') else {'apply': apply, 'ext': ext, 'dislike': dislike}[cmd](sys.argv[2])
