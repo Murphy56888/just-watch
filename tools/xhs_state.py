@@ -106,9 +106,9 @@ def plan():
                 "if(st)for(const k in st)for(const q of (st[k]||[]))if(!v&&q.masterUrl&&q.masterUrl.includes('.mp4?'))v=q.masterUrl.replace(/^http:/,'https:');"
                 "const imgs=(n.imageList||[]).slice(0,9).map(i=>(i.urlDefault||'').replace(/^http:/,'https:'));")
         if j['why'] == 'refresh':
-            j['code'] = base + f"JSON.stringify({{nid:'{j['nid']}',ok:!!v,v,img:imgs[0]||'',liked:n.interactInfo.likedCount,collected:n.interactInfo.collectedCount}})}})()"
+            j['code'] = base + f"return JSON.stringify({{nid:'{j['nid']}',ok:!!v,v,img:imgs[0]||'',liked:n.interactInfo.likedCount,collected:n.interactInfo.collectedCount}})}})()"
         else:
-            j['code'] = base + (f"JSON.stringify({{nid:'{j['nid']}',ok:true,title:n.title,desc:(n.desc||'').slice(0,1500),type:n.type,tags:(n.tagList||[]).map(t=>t.name),"
+            j['code'] = base + (f"return JSON.stringify({{nid:'{j['nid']}',ok:true,title:n.title,desc:(n.desc||'').slice(0,1500),type:n.type,tags:(n.tagList||[]).map(t=>t.name),"
                                 "liked:n.interactInfo.likedCount,collected:n.interactInfo.collectedCount,duration:n.video&&n.video.capa&&n.video.capa.duration,v,img:imgs[0]||'',imgs})})()")
     if jobs['learn_keyword']:
         jobs['learn_url'] = 'https://www.xiaohongshu.com/search_result?keyword=' + quote(jobs['learn_keyword'], safe='') + '&source=web_search_result_notes'
