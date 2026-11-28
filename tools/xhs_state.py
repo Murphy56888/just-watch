@@ -239,6 +239,17 @@ def write(name, gen, chips, items):
     shutil.copy(os.path.join(ROOT, 'feed', f'{name}.enc'), os.path.join(ROOT, 'feed', 'hist', f'{name}-{today()}.enc'))
 
 
+def series():
+    S = load(); out = {}
+    for it in S['items'].values():
+        if it['c'] == 'video' and it.get('se') and it.get('ep') is not None:
+            k = it['src'].split(' · ')[0] + '《' + it['se'] + '》'
+            o = out.setdefault(k, {'max_ep': 0, 'eps': 0, 'external': []})
+            o['eps'] += 1; o['max_ep'] = max(o['max_ep'], it['ep'])
+            if it.get('yt'): o['external'].append(it['id'])
+    print(json.dumps(out, ensure_ascii=False, indent=1))
+
+
 def show():
     S = load()
     from collections import Counter
@@ -251,4 +262,4 @@ def show():
 
 if __name__ == '__main__':
     cmd = sys.argv[1]
-    {'plan': plan, 'show': show}.get(cmd, lambda: None)() if cmd in ('plan', 'show') else {'apply': apply, 'ext': ext}[cmd](sys.argv[2])
+    {'plan': plan, 'show': show, 'series': series}.get(cmd, lambda: None)() if cmd in ('plan', 'show', 'series') else {'apply': apply, 'ext': ext}[cmd](sys.argv[2])
