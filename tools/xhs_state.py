@@ -132,9 +132,13 @@ def apply(path):
         b = byuid.get(pr['uid'])
         if not b: continue
         b['last_check'] = t
+        has = any(it.get('_uid') == b['uid'] or it['src'].split(' · ')[0] == b['name'] for it in S['items'].values())
         for n in pr.get('notes', []):
             nid = n['noteId']
             if nid in known or n.get('sticky') or n.get('type') != 'video':
+                continue
+            nt = note_time(nid)
+            if has and nt and (now() - nt).days > 30:   # 已经收录过的博主，30 天前的旧笔记不再逐条打开
                 continue
             S['pending'][nid] = {'nid': nid, 'tok': n['tok'], 'title': n.get('title', ''), 'type': n.get('type'), 'uid': b['uid'],
                                  'name': b['name'], 'kind': b['kind'], 'xsrc': 'pc_user'}
