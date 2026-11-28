@@ -13,7 +13,10 @@ SP = os.path.join(ROOT, 'state', 'xhs.enc')
 TZ = datetime.timezone(datetime.timedelta(hours=8))
 MAX_REQ = 6          # 每次运行最多的小红书请求数（主页 + 详情 + 搜索）
 PROFILES_PER_RUN = 2
-LEARN_KW = ['Claude 技巧', 'Claude Code 使用', 'Claude 使用体验', 'ChatGPT 使用技巧', 'GPT 提示词 技巧', 'GPT 使用体验', 'Muse 使用技巧', 'Muse AI 体验']
+LEARN_KW = ['用Claude做了一个', 'Claude Code 做的', 'Claude 使用感受', 'ChatGPT 真实体验', '用ChatGPT做了', 'Muse 体验', 'AI 做了一个App', 'Claude 工作流']
+LISTY = re.compile(r'\d+\s*(个|条|种|招|大|款)|技巧|提示词|指令|干货|必看|保姆级|教程|模板|合集|清单|收藏')
+def lscore(heat, title):  # 清单/技巧类标题降到 30%，让真实体验和"我做了什么"排前面
+    return heat * (0.3 if LISTY.search(title or '') else 1)
 
 
 def now(): return datetime.datetime.now(TZ)
@@ -152,7 +155,7 @@ def apply(path):
             c = S['learn'].setdefault(nid, {'nid': nid})
             c.update({'tok': f['tok'], 'title': f.get('title', ''), 'heat': heat, 'author': f.get('author', '')})
         # 只把当前热度前 12 名里还没取过详情的放进待处理
-        top = sorted(S['learn'].values(), key=lambda c: -c.get('heat', 0))[:12]
+        top = sorted(S['learn'].values(), key=lambda c: -lscore(c.get('heat', 0), c.get('title', '')))[:12]
         for c in top:
             if c['nid'] not in known:
                 S['pending'][c['nid']] = {'nid': c['nid'], 'tok': c['tok'], 'title': c['title'], 'type': 'learn', 'name': c['author'],
@@ -273,7 +276,7 @@ def build(S):
     write('comedy', gen, ['71脱口秀', '付航脱口秀', '三个火呛手', '林简七', '脱口秀小荟', '清一色脱口秀'], cout)
     # ---- learn：最近 7 天，热度前 10 ----
     L = [it for it in items if it['c'] == 'learn' and (ts.timestamp() - it['_dt']) < 7.5 * 86400]
-    L.sort(key=lambda x: -(x.get('_heat') or num(x.get('l')) + num(x.get('k'))))
+    L.sort(key=lambda x: -lscore(x.get('_heat') or num(x.get('l')) + num(x.get('k')), x.get('t', '')))
     write('learn', gen, ['GPT', 'Claude', 'Muse', '近 7 天 · 按点赞+收藏排序'], L[:10])
     # 太老的 learn 条目从状态里删掉
     for nid in [k for k, it in S['items'].items() if it['c'] == 'learn' and (ts.timestamp() - it['_dt']) > 8 * 86400]:
